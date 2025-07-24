@@ -4,20 +4,27 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - name: Checkout repository
+      - name: Checkout THIS repository (solacite/profile)
         uses: actions/checkout@v4
         with:
+          repository: solacite/profile
           token: ${{ secrets.GH_PAT_TOKEN }}
+          path: profile_repo_checkout
+
+      - name: Checkout the PROFILE README repository (solacite/solacite)
+        uses: actions/checkout@v4
+        with:
+          repository: solacite/solacite
+          token: ${{ secrets.GH_PAT_TOKEN }}
+          path: profile_readme_repo_checkout
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,18 +33,21 @@ jobs:
 
       - name: Install dependencies
         run: npm install octokit
+        working-directory: profile_repo_checkout
 
       - name: Run README update script
         env:
           GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
-        run: node .github/workflows/update-readme-script.js
+          PROFILE_README_PATH: profile_readme_repo_checkout/README.md
+        run: node profile_repo_checkout/.github/workflows/update-readme-script.js
 
-      - name: Commit and push changes
+      - name: Commit and push changes to PROFILE README
         run: |
+          cd profile_readme_repo_checkout # Change to the directory of the profile README repo
           git config user.name "GitHub Actions"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "Update README with latest data" || echo "No changes to commit"
+          git commit -m "Update README with latest activity" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}

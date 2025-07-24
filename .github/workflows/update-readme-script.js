@@ -2,7 +2,7 @@ import { Octokit } from "octokit";
 import { readFileSync, writeFileSync } from 'fs';
 
 const octokit = new Octokit({ auth: process.env.GH_PAT_TOKEN });
-const readmePath = 'README.md';
+const readmePath = process.env.PROFILE_README_PATH;
 
 async function updateReadme() {
   try {
