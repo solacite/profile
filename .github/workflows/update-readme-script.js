@@ -13,8 +13,8 @@ async function updateReadme() {
     const dynamicInfoContent = `Hello, ${login}! This README was last updated on ${new Date().toLocaleDateString('en-US')}.`;
 
     readmeContent = readmeContent.replace(
-      /(.|\n)*/,
-      `\n${dynamicInfoContent}\n`
+    /(.|\n)*/,
+        `\n${dynamicInfoContent}\n`
     );
 
     const allRepos = [];
