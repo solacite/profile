@@ -13,8 +13,8 @@ async function updateReadme() {
     const dynamicInfoContent = `Hello, ${login}! This README was last updated on ${new Date().toLocaleDateString('en-US')}.`;
 
     readmeContent = readmeContent.replace(
-    /(.|\n)*/,
-        `\n${dynamicInfoContent}\n`
+      /<!-- DYNAMIC_INFO_START -->[\s\S]*?<!-- DYNAMIC_INFO_END -->/,
+      `<!-- DYNAMIC_INFO_START -->\n${dynamicInfoContent}\n<!-- DYNAMIC_INFO_END -->`
     );
 
     const allRepos = [];
@@ -72,8 +72,8 @@ async function updateReadme() {
     }
 
     readmeContent = readmeContent.replace(
-      /(.|\n)*/,
-      `\n${commitsListMarkdown}\n`
+      /<!-- RECENT_ACTIVITY_START -->[\s\S]*?<!-- RECENT_ACTIVITY_END -->/,
+      `<!-- RECENT_ACTIVITY_START -->\n${commitsListMarkdown}\n<!-- RECENT_ACTIVITY_END -->`
     );
 
     writeFileSync(readmePath, readmeContent);
