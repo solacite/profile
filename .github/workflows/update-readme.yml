@@ -4,13 +4,20 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -28,7 +35,10 @@ jobs:
       - name: Commit and push changes
         run: |
           git config user.name "GitHub Actions"
-          git config user.email "github-actions@github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update README with latest data"
+          git commit -m "Update README with latest data" || echo "No changes to commit" # Only commits if there are changes
+          # Push back to the current repository (solacite/solacite)
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
