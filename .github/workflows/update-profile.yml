@@ -1,0 +1,29 @@
+name: Update Profile README
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: solacite/solacite
+        token: ${{ secrets.PROFILE_TOKEN }}
+        path: profile-repo
+    
+    - name: Update README
+      run: |
+        cd profile-repo
+        echo "Last updated: $(date)" >> README.md
+        
+    - name: Commit changes
+      run: |
+        cd profile-repo
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add README.md
+        git commit -m "Auto-update README" || exit 0
+        git push
