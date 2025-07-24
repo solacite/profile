@@ -10,7 +10,7 @@ async function updateReadme() {
 
     const { data: user } = await octokit.rest.users.getAuthenticated();
     const login = user.login;
-    const dynamicInfoContent = `Hello, ${login}! This README was last updated on ${new Date().toLocaleDateString('en-US')}.`; // Added locale for consistency
+    const dynamicInfoContent = `Hello, ${login}! This README was last updated on ${new Date().toLocaleDateString('en-US')}.`;
 
     readmeContent = readmeContent.replace(
       /(.|\n)*/,
