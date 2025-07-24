@@ -27,7 +27,7 @@ async function updateReadme() {
 
     const allRecentCommits = [];
     const maxCommitsPerRepo = 1;
-    const totalCommitsToShow = 10;
+    const totalCommitsToShow = 5;
 
     for (const repo of allRepos) {
       if (repo.fork || repo.archived) {
@@ -55,7 +55,7 @@ async function updateReadme() {
 
     allRecentCommits.sort((a, b) => new Date(b.commit.author.date) - new Date(a.commit.author.date));
 
-    let commitsListMarkdown = `**Recent Activity Across All Repositories:**\n\n`;
+    let commitsListMarkdown = `recent activity:\n\n`;
     if (allRecentCommits.length > 0) {
       allRecentCommits.slice(0, totalCommitsToShow).forEach(commit => {
         const date = new Date(commit.commit.author.date).toLocaleDateString('en-US', {
@@ -65,7 +65,7 @@ async function updateReadme() {
         const commitUrl = commit.html_url;
         const repoUrl = commit.repoUrl;
 
-        commitsListMarkdown += `- [${message}](${commitUrl}) in [${commit.repoName}](${repoUrl}) - ${date}\n`;
+        commitsListMarkdown += `[${message}](${commitUrl}) in [${commit.repoName}](${repoUrl}) - ${date}\n\n`;
       });
     } else {
       commitsListMarkdown = `_No recent activity found._`;
