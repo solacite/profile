@@ -20,6 +20,7 @@ async function updateReadme() {
     const allRepos = [];
     for await (const response of octokit.paginate.iterator(octokit.rest.repos.listForAuthenticatedUser, {
       type: 'owner',
+      visibility: 'public',
       per_page: 100
     })) {
       allRepos.push(...response.data);
