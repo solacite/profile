@@ -17,47 +17,46 @@ async function updateReadme() {
       `<!-- DYNAMIC_INFO_START -->\n${dynamicInfoContent}\n<!-- DYNAMIC_INFO_END -->`
     );
 
-    const allRepos = [];
-    for await (const response of octokit.paginate.iterator(octokit.rest.repos.listForAuthenticatedUser, {
-      visibility: 'public',
-      per_page: 100
-    })) {
-      allRepos.push(...response.data);
-    }
-
     const allRecentCommits = [];
-    const maxCommitsPerRepo = 1;
+    const seenRepos = new Set();
     const totalCommitsToShow = 5;
 
-    for (const repo of allRepos) {
-      if (repo.fork || repo.archived || repo.owner.login !== login) {
-        continue;
-      }
+    // search every repo (not just ours) for commits we authored
+    for await (const response of octokit.paginate.iterator(octokit.rest.search.commits, {
+      q: `author:${login}`,
+      sort: 'author-date',
+      order: 'desc',
+      per_page: 100,
+    })) {
+      for (const commit of response.data) {
+        const repo = commit.repository;
+        if (repo.private || repo.fork || repo.full_name === `${login}/${login}`) {
+          continue;
+        }
+        // one commit per repo so a single busy repo doesn't fill the list
+        if (seenRepos.has(repo.full_name)) {
+          continue;
+        }
+        seenRepos.add(repo.full_name);
 
-      try {
-        const { data: commits } = await octokit.rest.repos.listCommits({
-          owner: repo.owner.login,
-          repo: repo.name,
-          per_page: maxCommitsPerRepo,
+        allRecentCommits.push({
+          ...commit,
+          repoName: repo.owner.login === login ? repo.name : repo.full_name,
+          repoUrl: repo.html_url
         });
 
-        if (commits.length > 0) {
-          allRecentCommits.push({
-            ...commits[0],
-            repoName: repo.name,
-            repoUrl: repo.html_url
-          });
+        if (allRecentCommits.length >= totalCommitsToShow) {
+          break;
         }
-      } catch (commitError) {
-        console.warn(`Could not fetch commits for ${repo.full_name}:`, commitError.message);
+      }
+      if (allRecentCommits.length >= totalCommitsToShow) {
+        break;
       }
     }
-
-    allRecentCommits.sort((a, b) => new Date(b.commit.author.date) - new Date(a.commit.author.date));
 
     let commitsListMarkdown = `recent activity:\n\n`;
     if (allRecentCommits.length > 0) {
-      allRecentCommits.slice(0, totalCommitsToShow).forEach(commit => {
+      allRecentCommits.forEach(commit => {
         const date = new Date(commit.commit.author.date).toLocaleDateString('en-US', {
           year: 'numeric', month: 'short', day: 'numeric'
         });

@@ -51,3 +51,20 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+
+      # github disables scheduled workflows after 60 days without a commit to
+      # this repo, and every other commit goes to solacite/solacite, so touch a
+      # file here once a month to keep the schedule alive
+      - name: Keep this workflow alive
+        run: |
+          cd profile_repo_checkout
+          if [ "$(date -u +%d)" != "01" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "not the 1st, skipping keepalive"
+            exit 0
+          fi
+          date -u +%Y-%m-%dT%H:%M:%SZ > .github/keepalive
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive
+          git commit -m "keepalive" || echo "No changes to commit"
+          git push
